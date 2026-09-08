@@ -1,15 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import bcrypt from "bcryptjs";
-import { createUserSchema } from "./../../../lib/validation/auth"
+
+import { createUserSchema } from "@/schemas/user.schema";
+import { createUser, getUser } from "@/services/user.service";
 
 export async function GET() {
   try {
-    const users = await prisma.user.findMany({
-      orderBy: {
-        createdAt: "desc",
-      },
-    });
+    const users = await getUser();
 
     return NextResponse.json({
       success: true,
@@ -26,7 +22,7 @@ export async function GET() {
       { status: 500 }
     );
   }
-}
+} 
 
 export async function POST(request: NextRequest) {
   try {
@@ -45,15 +41,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { name, email, password, role } = result.data;
+    const user = await createUser(result.data);
 
-    const existingUser = await prisma.user.findUnique({
-      where: {
-        email,
+    return NextResponse.json(
+      {
+        success: true,
+        message: "User created successfully",
+        user,
       },
-    });
-
-    if (existingUser) {
+      { status: 201 }
+    );
+  } catch (error) {
+    if (error instanceof Error && error.message === "EMAIL_ALREADY_EXISTS") {
       return NextResponse.json(
         {
           success: false,
@@ -63,28 +62,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const hashedPassword = await bcrypt.hash(password, 12);
-
-    const user = await prisma.user.create({
-      data: {
-        name,
-        email,
-        password: hashedPassword,
-        role,
-      },
-    });
-
-    const { password: _, ...safeUser } = user; //never send back password to the users
-
-    return NextResponse.json(
-      {
-        success: true,
-        message: "User created successfully",
-        user: safeUser,
-      },
-      { status: 201 }
-    );
-  } catch (error) {
     console.error("CREATE_USER_ERROR:", error);
 
     return NextResponse.json(
