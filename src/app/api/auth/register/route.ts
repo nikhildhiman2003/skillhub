@@ -1,5 +1,5 @@
 import { registerSchema } from "@/schemas/auth.schema";
-import { registerUser } from "@/services/auth.services";
+import { registerUser } from "@/services/auth.service";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest){
@@ -39,7 +39,7 @@ export async function POST(request: NextRequest){
             {status : 409}
         );
     }
-
+  
     console.error("REGISTER_ERROR:",error);
     
     return NextResponse.json({
