@@ -35,4 +35,4 @@ export const loginSchema = z
      .min(8,"Password must be atleast 8 characters"),
 })
 
-export type loginschemaInput = z.infer<typeof loginSchema> 
+export type loginInput = z.infer<typeof loginSchema> 
