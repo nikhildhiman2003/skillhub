@@ -35,7 +35,7 @@ export async function loginUser(data:loginInput){
         }
     });
     if(!user){
-        throw new Error("INVALID CREDENTIALS");
+        throw new Error("INVALID_CREDENTIALS");
     }
 
     const passwordMatches = await bcrypt.compare(
@@ -44,7 +44,7 @@ export async function loginUser(data:loginInput){
     );
 
     if(!passwordMatches){
-        throw new Error("INVALID CREDENTIALS");
+        throw new Error("INVALID_CREDENTIALS");
     }
 
     const {password: _,...safeUser } = user;
