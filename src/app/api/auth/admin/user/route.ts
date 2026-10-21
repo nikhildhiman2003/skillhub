@@ -1,0 +1,45 @@
+import { NextRequest, NextResponse } from "next/server";
+import { getSession } from "@/lib/session";
+import { prisma } from "@/lib/prisma";
+
+export async function GET(request: NextRequest) {
+  const session = await getSession(request);
+
+  if (!session) {
+    return NextResponse.json(
+      {
+        success: false,
+        message: "Please log in first",
+      },
+      { status: 401 }
+    );
+  }
+
+  if (session.role !== "ADMIN") {
+    return NextResponse.json(
+      {
+        success: false,
+        message: "You do not have permission to access this resource",
+      },
+      { status: 403 }
+    );
+  }
+
+  const users = await prisma.user.findMany({
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      role: true,
+      createdAt: true,
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+
+  return NextResponse.json({
+    success: true,
+    users,
+  });
+}
